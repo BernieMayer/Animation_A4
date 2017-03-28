@@ -1,3 +1,1 @@
-# CPSC591_A1
-# CPSC587_A3
 # Animation_A4
