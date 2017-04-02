@@ -1,5 +1,7 @@
 
 #include "GL/glew.h"
+#include "ParamaterFileReader.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <GLFW/glfw3.h>
@@ -166,6 +168,12 @@ void startGlew( )
 
 int main( int argc, char**argv )
 {
+
+	cout << "test.txt";
+ParamaterFileReader reader = ParamaterFileReader("file.txt");
+	reader.echoFileContents();
+
+
 
 	glfwSetErrorCallback(error_callback);
 

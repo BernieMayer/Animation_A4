@@ -4,4 +4,4 @@ cd Debug &&
 make clean &&
 make &&
 cd .. &&
-./Debug/A3
+./Debug/A4
