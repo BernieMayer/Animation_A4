@@ -15,6 +15,8 @@
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
+
+//NOTE the dependencies below are for linux only
 #define GetCurrentDir getcwd
 #include <streambuf>
 
