@@ -14,6 +14,8 @@
 #define GLM_FORCE_RADIANS
 
 #include "TriMesh.h"
+#include "BoidScene.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -32,6 +34,7 @@ public:
 	void renderPlane();
 	void renderMesh();
 	void renderLight();
+	void renderBoids();
 
 	void setAspectRatio( float ratio );
 	void setZTranslation(float z);
@@ -54,16 +57,22 @@ private:
 	GLuint _programLight;
 	GLuint _programPlane;
 	GLuint _programMesh;
+	GLuint _programBoids;
 
 	GLuint _planeVertexArray;
+	GLuint _boidVertexArray;
 	GLuint _planeVertexBuffer;
 
 	GLuint _meshVertexArray;
 	GLuint _meshVertexBuffer;
 	GLuint _meshNormalBuffer;
 	GLuint _meshIndicesBuffer;
+	GLuint _boidsVertexBuffer;
 
-        GLint _mvUniform, _projUniform;
+	GLuint _boidColorBuffer;
+
+
+    GLint _mvUniform, _projUniform;
 
 	/* Matrices */
 	glm::mat4 _modelview;
@@ -78,7 +87,11 @@ private:
 	trimesh::TriMesh* _mesh;
 	std::vector<unsigned int> _triangleIndices;
 
+
+
 	glm::vec3 lightPosition;
+
+	BoidScene* boidScene;
 
 };
 

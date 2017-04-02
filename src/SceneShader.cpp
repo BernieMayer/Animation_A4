@@ -23,6 +23,9 @@ SceneShader::SceneShader(): Shader()
 	_yRot = 0.0;
 	lightPosition = glm::vec3(0.5, 0.5, 0.5);
 
+	boidScene = new BoidScene("file.txt");
+
+
 }
 
 
@@ -97,6 +100,24 @@ void SceneShader::createVertexBuffer()
 
 	glBindVertexArray(0);
 
+	glGenVertexArrays(1, &_boidVertexArray);
+	glBindVertexArray(_boidVertexArray);
+
+
+	glGenBuffers(1, &_boidsVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _boidsVertexBuffer);
+
+	vector<vec3> geometry = boidScene->getBoidGeometry(0);
+	glBufferData(GL_ARRAY_BUFFER, geometry.size() * sizeof(glm::vec3), geometry.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &_boidColorBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _boidColorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, geometry.size() * sizeof(glm::vec3), geometry.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(1);
+
 }
 
 
@@ -107,6 +128,8 @@ void SceneShader::startup()
 	_programMesh = compile_shaders("./shaders/mesh.vert", "./shaders/mesh.frag");
 
 	_programLight = compile_shaders("./shaders/light.vert", "./shaders/light.frag");
+
+	_programBoids = compile_shaders("./shaders/simple.vert", "./shaders/simple.frag");
 
 	createVertexBuffer();
 
@@ -209,7 +232,7 @@ void SceneShader::renderLight()
 void SceneShader::render()
 {
 	renderPlane();
-	renderMesh();
+	//renderMesh(); //this can be commented back on to show the bunny rendering
 	renderLight();
 }
 

@@ -169,10 +169,11 @@ void startGlew( )
 int main( int argc, char**argv )
 {
 
+	/*
 	cout << "test.txt";
-ParamaterFileReader reader = ParamaterFileReader("file.txt");
+	ParamaterFileReader reader = ParamaterFileReader("file.txt");
 	reader.echoFileContents();
-
+	*/
 
 
 	glfwSetErrorCallback(error_callback);

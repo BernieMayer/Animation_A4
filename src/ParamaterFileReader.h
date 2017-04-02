@@ -8,6 +8,7 @@
 #ifndef PARAMATERFILEREADER_H_
 #define PARAMATERFILEREADER_H_
 
+#include <vector>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -26,9 +27,15 @@ public:
 
 	void echoFileContents();
 
+	string queryTag(string tagName);
+
+
 
 private:
+	std::vector<std::string> splitString(const std::string& str,
+	                                      const std::string& delimiter);
 	string fileContents;
+	vector<string> fileLines;
 
 };
 

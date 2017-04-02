@@ -9,6 +9,7 @@
 #define BOID_H_
 
 #include <glm/glm.hpp>
+#include <vector>
 
 using namespace glm;
 using namespace std;
@@ -16,10 +17,13 @@ using namespace std;
 class Boid {
 public:
 	Boid();
+	Boid(vec3 translation);
 	virtual ~Boid();
 
+
+	vector<vec3> getGeometry();
 private:
-	private vector<vec3> geometry;
+	vector<vec3> geometry;
 
 };
 

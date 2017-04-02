@@ -4,6 +4,8 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/Boid.cpp \
+../src/BoidScene.cpp \
 ../src/ParamaterFileReader.cpp \
 ../src/PhysicsObject.cpp \
 ../src/SceneShader.cpp \
@@ -11,6 +13,8 @@ CPP_SRCS += \
 ../src/main.cpp 
 
 OBJS += \
+./src/Boid.o \
+./src/BoidScene.o \
 ./src/ParamaterFileReader.o \
 ./src/PhysicsObject.o \
 ./src/SceneShader.o \
@@ -18,6 +22,8 @@ OBJS += \
 ./src/main.o 
 
 CPP_DEPS += \
+./src/Boid.d \
+./src/BoidScene.d \
 ./src/ParamaterFileReader.d \
 ./src/PhysicsObject.d \
 ./src/SceneShader.d \
