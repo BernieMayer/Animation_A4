@@ -21,7 +21,10 @@ public:
 
 	vector<vec3> getBoidGeometry(int i);
 	int getNumberOfBoids();
+
+	void refresh();
 private:
+	string parameterFileName;
 	ParamaterFileReader* paramReader;
 	vector<Boid*> boids;
 

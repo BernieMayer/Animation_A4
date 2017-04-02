@@ -14,18 +14,22 @@ BoidScene::BoidScene() {
 
 BoidScene::BoidScene(string filename)
 {
+	parameterFileName = filename;
 	paramReader = new ParamaterFileReader(filename);
 	paramReader->echoFileContents();
 
 
-	string queryNumBoids = paramReader->queryTag("numberOfBoids");
-	string numberOfBoidsStr = queryNumBoids.erase(queryNumBoids.find("numberOfBoids"), queryNumBoids.length() - 1);
+	string tag = "numberOfBoids:";
+	string queryNumBoids = paramReader->queryTag("numberOfBoids:");
+	string numberOfBoidsStr = queryNumBoids.replace(queryNumBoids.find(tag), tag.length(), "");//queryNumBoids.erase(queryNumBoids.find("numberOfBoids:"), queryNumBoids.find(":") + 1);
 	cout << "The number of boids is " << numberOfBoidsStr << "\n";
 	int numBoids = stoi(numberOfBoidsStr);
 
+	vec3 translationVector = vec3(-1, 0, 0);
 	for (int i = 0; i < numBoids; i++)
 	{
-		Boid* boid = new Boid();
+		Boid* boid = new Boid(translationVector);
+		translationVector.x += 1.0;
 
 		boids.push_back(boid);
 	}
@@ -43,4 +47,29 @@ vector<vec3> BoidScene::getBoidGeometry(int i)
 int BoidScene::getNumberOfBoids()
 {
 	return boids.size();
+}
+
+//Custom code used to refresh the boid scene
+void BoidScene::refresh()
+{
+	delete paramReader;
+	boids.clear();
+
+	paramReader = new ParamaterFileReader(parameterFileName);
+	paramReader->echoFileContents();
+
+	string tag = "numberOfBoids:";
+		string queryNumBoids = paramReader->queryTag("numberOfBoids:");
+		string numberOfBoidsStr = queryNumBoids.replace(queryNumBoids.find(tag), tag.length(), "");//queryNumBoids.erase(queryNumBoids.find("numberOfBoids:"), queryNumBoids.find(":") + 1);
+		cout << "The number of boids is " << numberOfBoidsStr << "\n";
+		int numBoids = stoi(numberOfBoidsStr);
+
+		vec3 translationVector = vec3(-1, 0, 0);
+		for (int i = 0; i < numBoids; i++)
+		{
+			Boid* boid = new Boid(translationVector);
+			translationVector.x += 1.0;
+
+			boids.push_back(boid);
+		}
 }

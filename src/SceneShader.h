@@ -31,6 +31,8 @@ public:
 	void shutdown ();
 	void render();
 
+	void refreshScene();
+
 	void renderPlane();
 	void renderMesh();
 	void renderLight();

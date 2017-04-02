@@ -53,6 +53,9 @@ void keyboard( unsigned char key, int x, int y )
 	case (GLFW_KEY_E):
 				shader.updateLightPositionZ(factor);
 		break;
+	case (GLFW_KEY_R):
+		shader.refreshScene();
+		break;
 
 	default:
 		break;

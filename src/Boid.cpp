@@ -21,9 +21,10 @@ Boid::Boid() {
 
 Boid::Boid(vec3 translation)
 {
-	vec3 p0 = vec3(0,0,0);
-	vec3 p1	= vec3(0.5f, 0.5f, 0);
-	vec3 p2 = vec3(1,0,0);
+	float scaleFactor = 0.2f;
+	vec3 p0 = scaleFactor * (vec3(0,0,0) + translation);
+	vec3 p1	= scaleFactor * (vec3(0.5f, 0.5f, 0) + translation);
+	vec3 p2 = scaleFactor * (vec3(1,0,0) + translation);
 
 	geometry.push_back(p0);
 	geometry.push_back(p1);

@@ -1,1 +1,1 @@
-numberOfBoids:1
+numberOfBoids:15

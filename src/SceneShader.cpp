@@ -135,6 +135,67 @@ void SceneShader::startup()
 
 }
 
+void SceneShader::refreshScene()
+{
+	boidScene->refresh();
+}
+
+void SceneShader::renderBoids()
+{
+	//for each boid...
+	int numBoids = boidScene->getNumberOfBoids();
+	for (int i  = 0; i < numBoids; i++)
+	{
+
+		glBindVertexArray(_boidVertexArray);
+		glUseProgram(_programBoids);
+
+
+		//scene matrices and camera setup
+		glm::vec3 eye(0.0f, 0.3f, 2.0f);
+		glm::vec3 up(0.0f, 1.0f, 0.0f);
+		glm::vec3 center(0.0f, 0.0f, 0.0f);
+
+		_modelview = glm::lookAt( eye, center, up);
+
+		_projection = glm::perspective( 45.0f, _aspectRatio, 0.01f, 100.0f);
+
+		glm::mat4 identity(1.0f);
+
+		glm::mat4 rotationX = glm::rotate(identity, _yRot  * PI/180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		_modelview *=  rotationX;
+
+		//uniform variables
+		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "modelviewMatrix"), 1, GL_FALSE, glm::value_ptr(_modelview));
+		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "perspectiveMatrix"), 1, GL_FALSE, glm::value_ptr(_projection));
+
+
+
+		vector<vec3> geometry = boidScene->getBoidGeometry(i);
+		vector<vec3> colors;
+
+		for (auto i :geometry)
+		{
+			colors.push_back(vec3(1.0, 0, 0.0));
+		}
+
+
+		glBindBuffer(GL_ARRAY_BUFFER, _boidsVertexBuffer);
+		glBufferData(GL_ARRAY_BUFFER,  geometry.size() * sizeof (glm::vec3), geometry.data(), GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, _boidColorBuffer);
+		glBufferData(GL_ARRAY_BUFFER,  colors.size() * sizeof (glm::vec3), colors.data(), GL_STATIC_DRAW);
+
+
+
+		glDrawArrays(GL_TRIANGLES, 0, geometry.size());
+
+		glBindVertexArray(0);
+	}
+
+}
+
 void SceneShader::renderPlane()
 {
 	glBindVertexArray(_planeVertexArray);
@@ -232,6 +293,7 @@ void SceneShader::renderLight()
 void SceneShader::render()
 {
 	renderPlane();
+	renderBoids();
 	//renderMesh(); //this can be commented back on to show the bunny rendering
 	renderLight();
 }
@@ -284,3 +346,5 @@ SceneShader::~SceneShader()
 {
 	shutdown();
 }
+
+
