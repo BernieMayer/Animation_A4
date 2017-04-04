@@ -35,6 +35,7 @@ private:
 	float alpha_t;
 	float targetDistance;
 	float neighbourDistance;
+	float avoidDistance;
 	string parameterFileName;
 	ParamaterFileReader* paramReader;
 	vector<Boid*> boids;

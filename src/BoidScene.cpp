@@ -22,9 +22,10 @@ BoidScene::BoidScene(string filename)
 	initFromConfigFile();
 
 	alpha_n = 0.4f;
-	alpha_t = 0.6f;
+	alpha_t = 0.4f;
 
-	targetDistance = 1.0f;
+	avoidDistance = 2.0f;
+	targetDistance = 5.0f;
 	targetLocation =  glm::vec3(1.0, 1.0, 0.0);
 
 
@@ -55,6 +56,8 @@ void BoidScene::updateScene()
 	{
 		Boid* boid_i = boids.at(i);
 		vec3 avgNeighbour = vec3(0, 0, 0);
+		vec3 h_a = vec3(0,0,0);
+		int num_a = 0;
 		float avgVelocity = 0.0f;
 		vec3 h_t;
 		int numNeighbours = 0;
@@ -63,7 +66,7 @@ void BoidScene::updateScene()
 
 		if (distance_n < targetDistance)
 		{
-			h_t = targetLocation - boid_i->getCenter();
+			//h_t = targetLocation - boid_i->getCenter();
 		}
 
 		for (int j = 0; j < boids.size() ; j++)
@@ -74,7 +77,20 @@ void BoidScene::updateScene()
 				//check boid_i with boid_j and see if they are close etc
 				float distance_n = length(boid_j->getCenter() - boid_i->getCenter());
 
-				if (distance_n < neighbourDistance)
+				if (distance_n < avoidDistance)
+				{
+					/*
+					avgNeighbour = avgNeighbour - boid_j->getCenter();
+					numNeighbours++;
+					avgVelocity += boid_j->getVelocity();
+					*/
+
+					h_a = h_a + boid_j->getCenter();
+					num_a++;
+					numNeighbours++;
+					avgVelocity += boid_j->getVelocity();
+
+				}else if (distance_n < neighbourDistance)
 				{
 					avgNeighbour = avgNeighbour + boid_j->getCenter();
 					numNeighbours++;
@@ -83,10 +99,12 @@ void BoidScene::updateScene()
 
 			}
 		}
+
+		h_a = (h_a)/((float) num_a);
 		avgVelocity = avgVelocity/((float) numNeighbours);
 		avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
 
-		vec3 heading = alpha_n * avgNeighbour + alpha_t * h_t;
+		vec3 heading = alpha_n * avgNeighbour + alpha_t * ( -1.0f * h_a) + 0.5f * boid_i->getHeading();
  		boid_i->setHeading(normalize(heading));
  		boid_i->setVelocity(avgVelocity);
 	}
