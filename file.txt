@@ -1,1 +1,2 @@
-numberOfBoids:15
+numberOfBoids:10
+neigbourDistance:0.9

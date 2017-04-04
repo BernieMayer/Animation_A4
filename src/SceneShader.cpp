@@ -143,7 +143,9 @@ void SceneShader::refreshScene()
 void SceneShader::renderBoids()
 {
 	//for each boid...
+	boidScene->updateScene();
 	int numBoids = boidScene->getNumberOfBoids();
+	vector<vec3> geometry = boidScene->getBoidGeometry(0);
 	for (int i  = 0; i < numBoids; i++)
 	{
 
@@ -166,18 +168,21 @@ void SceneShader::renderBoids()
 
 		_modelview *=  rotationX;
 
+		//vector<vec3> geometry = boidScene->getBoidGeometry(i);
+		_modelview *= glm::translate(identity, boidScene->getBoidCenter(i));
+
 		//uniform variables
 		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "modelviewMatrix"), 1, GL_FALSE, glm::value_ptr(_modelview));
 		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "perspectiveMatrix"), 1, GL_FALSE, glm::value_ptr(_projection));
 
 
 
-		vector<vec3> geometry = boidScene->getBoidGeometry(i);
+
 		vector<vec3> colors;
 
 		for (auto i :geometry)
 		{
-			colors.push_back(vec3(1.0, 0, 0.0));
+			colors.push_back(vec3(1.0, 0.0, 0.0));
 		}
 
 

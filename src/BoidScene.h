@@ -19,14 +19,27 @@ public:
 	BoidScene(string filename);
 	virtual ~BoidScene();
 
+	vec3 getBoidCenter(int i);
 	vector<vec3> getBoidGeometry(int i);
 	int getNumberOfBoids();
 
+	void updateScene();
+	string extractTagValue(string fullTag, string tag);
+
 	void refresh();
 private:
+
+	void initFromConfigFile();
+
+	float alpha_n;
+	float alpha_t;
+	float targetDistance;
+	float neighbourDistance;
 	string parameterFileName;
 	ParamaterFileReader* paramReader;
 	vector<Boid*> boids;
+
+	vec3 targetLocation;
 
 
 

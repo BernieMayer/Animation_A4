@@ -50,6 +50,7 @@ ParamaterFileReader::ParamaterFileReader(string filename)
 vector<std::string> ParamaterFileReader::splitString(const std::string& str,
                                       const std::string& delimiter)
 {
+	int i;
     std::vector<std::string> strings;
 
     std::string::size_type pos = 0;

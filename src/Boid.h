@@ -22,7 +22,23 @@ public:
 
 
 	vector<vec3> getGeometry();
+	vec3 getCenter();
+
+	float getVelocity();
+	void setVelocity(float _velocity);
+
+	void setHeading(vec3 _heading);
+	vec3 getHeading();
+
+	void setCenter(const vec3& center) {
+		this->center = center;
+	}
+
 private:
+	vec3 heading;	//direction the boid is heading
+
+	float velocity;
+	vec3 center;
 	vector<vec3> geometry;
 
 };
