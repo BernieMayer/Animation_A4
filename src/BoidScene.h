@@ -10,6 +10,7 @@
 
 #include "Boid.h"
 #include <string>
+#include <math.h>
 #include "ParamaterFileReader.h"
 #include <glm/glm.hpp>
 
@@ -31,8 +32,10 @@ private:
 
 	void initFromConfigFile();
 
+	float fieldOfView;
 	float alpha_n;
-	float alpha_t;
+	float alpha_a;
+	float alpha_v;
 	float targetDistance;
 	float neighbourDistance;
 	float avoidDistance;

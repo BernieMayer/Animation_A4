@@ -27,7 +27,7 @@ Boid::Boid(vec3 translation)
 	vec3 p2 = scaleFactor * (vec3(1,0,0) + translation);
 
 	velocity = 0.009f;
-	heading = vec3(0.5,0.5,0.5);
+	heading = vec3(1,0.1,0.1);
 
 	center = (p0 + p1 + p2)/(3.0f);
 

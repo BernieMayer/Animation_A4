@@ -182,7 +182,9 @@ void SceneShader::renderBoids()
 
 		for (auto i :geometry)
 		{
+
 			colors.push_back(vec3(1.0, 0.0, 0.0));
+
 		}
 
 

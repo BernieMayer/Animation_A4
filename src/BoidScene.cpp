@@ -22,11 +22,14 @@ BoidScene::BoidScene(string filename)
 	initFromConfigFile();
 
 	alpha_n = 0.4f;
-	alpha_t = 0.4f;
+	alpha_a = 0.4f;
+	alpha_v = 0.2f;
+
+	fieldOfView = M_PI;
 
 	avoidDistance = 2.0f;
 	targetDistance = 5.0f;
-	targetLocation =  glm::vec3(1.0, 1.0, 0.0);
+	targetLocation =  glm::vec3(0.5, 0.5, 0.5);
 
 
 }
@@ -58,15 +61,15 @@ void BoidScene::updateScene()
 		vec3 avgNeighbour = vec3(0, 0, 0);
 		vec3 h_a = vec3(0,0,0);
 		int num_a = 0;
-		float avgVelocity = 0.0f;
+		float avgVelocity = boid_i->getVelocity();
 		vec3 h_t;
-		int numNeighbours = 0;
+		int numNeighbours = 1;
 
 		float distance_n  = length(boid_i->getCenter() - targetLocation);
 
 		if (distance_n < targetDistance)
 		{
-			//h_t = targetLocation - boid_i->getCenter();
+			h_t = targetLocation - boid_i->getCenter();
 		}
 
 		for (int j = 0; j < boids.size() ; j++)
@@ -74,9 +77,11 @@ void BoidScene::updateScene()
 			Boid* boid_j = boids.at(j);
 			if (j != i)
 			{
+				vec3 vectorI_J = boid_j->getCenter() - boid_i->getCenter();
 				//check boid_i with boid_j and see if they are close etc
 				float distance_n = length(boid_j->getCenter() - boid_i->getCenter());
 
+				float arc_angle = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
 				if (distance_n < avoidDistance)
 				{
 					/*
@@ -90,7 +95,7 @@ void BoidScene::updateScene()
 					numNeighbours++;
 					avgVelocity += boid_j->getVelocity();
 
-				}else if (distance_n < neighbourDistance)
+				}else if (distance_n < neighbourDistance )
 				{
 					avgNeighbour = avgNeighbour + boid_j->getCenter();
 					numNeighbours++;
@@ -104,7 +109,8 @@ void BoidScene::updateScene()
 		avgVelocity = avgVelocity/((float) numNeighbours);
 		avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
 
-		vec3 heading = alpha_n * avgNeighbour + alpha_t * ( -1.0f * h_a) + 0.5f * boid_i->getHeading();
+		vec3 heading = alpha_n * normalize(avgNeighbour)
+		+ alpha_a * normalize(( -1.0f * h_a)) + alpha_v * normalize(boid_i->getHeading());
  		boid_i->setHeading(normalize(heading));
  		boid_i->setVelocity(avgVelocity);
 	}
@@ -161,12 +167,48 @@ void BoidScene::initFromConfigFile()
 
 	neighbourDistance = stof(neigbourDistanceStr);
 
+	string avoid_tag = "avoidDistance:";
+	string queryAvoidDistance = paramReader->queryTag("avoidDistance:");
+
+	string avoidDistanceStr = extractTagValue(queryAvoidDistance, avoid_tag );
+
+	avoidDistance = stof(avoidDistanceStr);
+
 	vec3 translationVector = vec3(-1, 0, 0);
+	vec3 translationVector2 = vec3(0, 1, 0);
 	for (int i = 0; i < numBoids; i++)
 	{
+		if (i%2 == 0) {
 		Boid* boid = new Boid(translationVector);
 		translationVector.x += 1.0;
 
 		boids.push_back(boid);
+		} else {
+			Boid* boid = new Boid(translationVector2);
+			translationVector2.x += 1.0;
+
+			boids.push_back(boid);
+		}
 	}
+
+	string alpha_n_tag = "alpha_n:";
+	string query_alpha_n = paramReader->queryTag(alpha_n_tag);
+
+	string alpha_n_str = extractTagValue(query_alpha_n, alpha_n_tag);
+
+	alpha_n = stof(alpha_n_str);
+
+	string alpha_a_tag = "alpha_a:";
+	string query_alpha_a = paramReader->queryTag(alpha_a_tag);
+
+	string alpha_a_str = extractTagValue(query_alpha_a, alpha_a_tag);
+
+	alpha_a = stof(alpha_a_str);
+
+	string alpha_v_tag = "alpha_v:";
+	string query_alpha_v = paramReader->queryTag(alpha_v_tag);
+
+	string alpha_v_str = extractTagValue(query_alpha_v, alpha_v_tag);
+
+	alpha_a = stof(alpha_v_str);
 }
