@@ -25,7 +25,7 @@ BoidScene::BoidScene(string filename)
 	alpha_a = 0.4f;
 	alpha_v = 0.2f;
 
-	fieldOfView = M_PI;
+	fieldOfView = M_PI/2.0f;
 
 	avoidDistance = 2.0f;
 	targetDistance = 5.0f;
@@ -60,7 +60,7 @@ void BoidScene::updateScene()
 		Boid* boid_i = boids.at(i);
 		vec3 avgNeighbour = vec3(0, 0, 0);
 		vec3 h_a = vec3(0,0,0);
-		int num_a = 0;
+		int num_a = 1;
 		float avgVelocity = boid_i->getVelocity();
 		vec3 h_t;
 		int numNeighbours = 1;
@@ -78,11 +78,12 @@ void BoidScene::updateScene()
 			if (j != i)
 			{
 				vec3 vectorI_J = boid_j->getCenter() - boid_i->getCenter();
+				printf("The boid j is at %f, %f, %f \n", boid_j->getCenter().x, boid_j->getCenter().y, boid_j->getCenter().z);
 				//check boid_i with boid_j and see if they are close etc
 				float distance_n = length(boid_j->getCenter() - boid_i->getCenter());
 
 				float arc_angle = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
-				if (distance_n < avoidDistance)
+				if (distance_n < avoidDistance && acos(arc_angle) !=  fieldOfView/2.0f)
 				{
 					/*
 					avgNeighbour = avgNeighbour - boid_j->getCenter();
@@ -90,27 +91,38 @@ void BoidScene::updateScene()
 					avgVelocity += boid_j->getVelocity();
 					*/
 
-					h_a = h_a + boid_j->getCenter();
+					vec3 i_to_j = normalize(boid_i->getCenter() - boid_j->getCenter());
+					vec3 current_h_a = vec3(1, 1, 1) - i_to_j;
+
+					h_a = h_a + current_h_a;
+
 					num_a++;
 					numNeighbours++;
 					avgVelocity += boid_j->getVelocity();
 
-				}else if (distance_n < neighbourDistance )
+
+				}else if (distance_n < neighbourDistance && acos(arc_angle) != fieldOfView/2.0f )
 				{
 					avgNeighbour = avgNeighbour + boid_j->getCenter();
+
 					numNeighbours++;
 					avgVelocity += boid_j->getVelocity();
+
 				}
+
 
 			}
 		}
 
-		h_a = (h_a)/((float) num_a);
+
+		//h_a = (h_a)/((float) num_a);
+		//printf("num neighbours is %i \n", numNeighbours );
 		avgVelocity = avgVelocity/((float) numNeighbours);
 		avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
 
 		vec3 heading = alpha_n * normalize(avgNeighbour)
-		+ alpha_a * normalize(( -1.0f * h_a)) + alpha_v * normalize(boid_i->getHeading());
+		+ alpha_a * normalize( -1.0f * h_a) + alpha_v * normalize(boid_i->getHeading());
+
  		boid_i->setHeading(normalize(heading));
  		boid_i->setVelocity(avgVelocity);
 	}
@@ -120,6 +132,7 @@ void BoidScene::updateScene()
 		vec3 center = boid->getCenter();
 
 		//boid->setCenter(center + boid->getHeading() *0.002f);
+
 		boid->setCenter(center + boid->getHeading() * boid->getVelocity());
 	}
 }
@@ -174,7 +187,7 @@ void BoidScene::initFromConfigFile()
 
 	avoidDistance = stof(avoidDistanceStr);
 
-	vec3 translationVector = vec3(-1, 0, 0);
+	vec3 translationVector = vec3(0, 0, 0);
 	vec3 translationVector2 = vec3(0, 1, 0);
 	for (int i = 0; i < numBoids; i++)
 	{

@@ -1,6 +1,6 @@
 numberOfBoids:100
-alpha_n:0.45
-alpha_a:0.90
+alpha_n:0.15
+alpha_a:0.20
 alpha_v:0.60
-neigbourDistance:6.0
-avoidDistance:4.0
+neigbourDistance:2.0
+avoidDistance:1.0
