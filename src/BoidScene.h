@@ -13,6 +13,7 @@
 #include <math.h>
 #include "ParamaterFileReader.h"
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 class BoidScene {
 public:
@@ -20,6 +21,7 @@ public:
 	BoidScene(string filename);
 	virtual ~BoidScene();
 
+	mat4 getModelMatrix(int i);
 	vec3 getBoidCenter(int i);
 	vector<vec3> getBoidGeometry(int i);
 	int getNumberOfBoids();
@@ -30,7 +32,10 @@ public:
 	void refresh();
 private:
 
+
+	float generateRandomFloat(float min, float max);
 	void initFromConfigFile();
+	string extractValueFromTag(string tag);
 
 	float fieldOfView;
 	float alpha_n;

@@ -171,6 +171,8 @@ void SceneShader::renderBoids()
 		//vector<vec3> geometry = boidScene->getBoidGeometry(i);
 		_modelview *= glm::translate(identity, boidScene->getBoidCenter(i));
 
+		//_modelview = boidScene->getModelMatrix(i);
+
 		//uniform variables
 		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "modelviewMatrix"), 1, GL_FALSE, glm::value_ptr(_modelview));
 		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "perspectiveMatrix"), 1, GL_FALSE, glm::value_ptr(_projection));
