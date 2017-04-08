@@ -105,7 +105,7 @@ void BoidScene::updateScene()
 					float x = calculateX(length(i_to_j));
 
 
-					vec4 current_h_a = vec4(R - vectorI_J, linearWeighting(x));
+					vec4 current_h_a =  vec4(R - vectorI_J, linearWeighting(x));
 
 					totalAvoidance += current_h_a;
 
@@ -122,13 +122,13 @@ void BoidScene::updateScene()
 
 					//totalFollowing += vec4(boid_j->getHeading(), 1);
 					//totalFollowing += vec4(boid_j->getHeading(), linearWeighting(x));
-					totalNeighbourVelocity += vec4(boid_j->getVelocity(), quadraticWeighting(x));
+					totalNeighbourVelocity += vec4(boid_j->getVelocity(), linearWeighting(x));
 					totalNeighbour += vec4(boid_j->getCenter(), 1);
 
 				} else if (distance_n < neighbourDistance)
 				{
 					float x =  calculateX(length(vectorI_J));
-					totalNeighbourVelocity += vec4(boid_j->getVelocity(),1);
+					totalNeighbourVelocity += vec4(boid_j->getVelocity(),linearWeighting(x));
 
 				}
 

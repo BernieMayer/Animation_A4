@@ -1,9 +1,9 @@
 numberOfBoids:100
-maxSpawnDistance:5.0
+maxSpawnDistance:2.0
 minSpawnDistance:0.0
-alpha_n:0.10
-alpha_a:0.10
+alpha_n:0.20
+alpha_a:0.80
 alpha_v:0.100
 neigbourDistance:7.0
-avoidDistance:3.0
-fieldOfViewMultiplier:0.5
+avoidDistance:6.0
+fieldOfViewMultiplier:1.0
