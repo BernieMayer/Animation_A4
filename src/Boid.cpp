@@ -26,8 +26,8 @@ Boid::Boid(vec3 translation)
 	vec3 p1	= scaleFactor * (vec3(0.5f, 0.5f, 0) + translation);
 	vec3 p2 = scaleFactor * (vec3(1,0,0) + translation);
 
-	velocity = 0.009f;
-	heading = vec3(1,0.0,0.0);
+	velocity = vec3(0.0, 0.0, 0.0);
+	heading = vec3(1, 0,0.0);
 
 
 	center = (p0 + p1 + p2)/(3.0f);
@@ -51,12 +51,12 @@ vec3 Boid::getCenter()
 	return center;
 }
 
-float Boid::getVelocity()
+vec3 Boid::getVelocity()
 {
 	return velocity;
 }
 
-void Boid::setVelocity(float _velocity)
+void Boid::setVelocity(vec3 _velocity)
 {
 	velocity = _velocity;
 }

@@ -24,8 +24,8 @@ public:
 	vector<vec3> getGeometry();
 	vec3 getCenter();
 
-	float getVelocity();
-	void setVelocity(float _velocity);
+	vec3 getVelocity();
+	void setVelocity(vec3 _velocity);
 
 	void setHeading(vec3 _heading);
 	vec3 getHeading();
@@ -37,7 +37,7 @@ public:
 private:
 	vec3 heading;	//direction the boid is heading
 
-	float velocity;
+	vec3 velocity;
 	vec3 center;
 	vector<vec3> geometry;
 

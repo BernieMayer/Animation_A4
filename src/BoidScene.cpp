@@ -12,6 +12,8 @@ BoidScene::BoidScene() {
 
 }
 
+
+
 BoidScene::BoidScene(string filename)
 {
 
@@ -25,7 +27,7 @@ BoidScene::BoidScene(string filename)
 	alpha_a = 0.4f;
 	alpha_v = 0.2f;
 
-	fieldOfView = M_PI/2.0f;
+	fieldOfView = 2 * M_PI;
 
 	avoidDistance = 2.0f;
 	targetDistance = 5.0f;
@@ -57,11 +59,15 @@ void BoidScene::updateScene()
 
 	for (int i = 0; i < boids.size(); i++)
 	{
+
+
 		Boid* boid_i = boids.at(i);
-		vec3 avgNeighbour = vec3(0, 0, 0);
+		vec4 totalNeighbourVelocity = vec4(boid_i->getVelocity(), 1);
+		vec4 totalNeighbour = vec4(boid_i->getCenter(), 1);
+		vec4 totalFollowing = vec4(boid_i->getHeading(), 1);
 		vec3 h_a = vec3(0,0,0);
 		int num_a = 1;
-		float avgVelocity = boid_i->getVelocity();
+		//float avgVelocity = boid_i->getVelocity();
 		vec3 h_t;
 		int numNeighbours = 1;
 
@@ -78,35 +84,37 @@ void BoidScene::updateScene()
 			if (j != i)
 			{
 				vec3 vectorI_J = boid_j->getCenter() - boid_i->getCenter();
-				printf("The boid j is at %f, %f, %f \n", boid_j->getCenter().x, boid_j->getCenter().y, boid_j->getCenter().z);
 				//check boid_i with boid_j and see if they are close etc
 				float distance_n = length(boid_j->getCenter() - boid_i->getCenter());
 
-				float arc_angle = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
-				if (distance_n < avoidDistance && acos(arc_angle) !=  fieldOfView/2.0f)
+				float angle = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
+				//printf("The heading is is %f , %f, %f, \n",
+                //boid_i->getHeading().x, boid_i->getHeading().y, boid_i->getHeading().z);
+				if (distance_n < avoidDistance && angle !=  fieldOfView/2.0f)
 				{
-					/*
-					avgNeighbour = avgNeighbour - boid_j->getCenter();
-					numNeighbours++;
-					avgVelocity += boid_j->getVelocity();
-					*/
+
 
 					vec3 i_to_j = normalize(boid_i->getCenter() - boid_j->getCenter());
-					vec3 current_h_a = vec3(1, 1, 1) - i_to_j;
+					//vec3 current_h_a = vec3(1, 1, 1) - i_to_j;
+
+					//This is a vector circle that defines the radius of avoidance
+					vec3 R = boid_i->getCenter() + avoidDistance * normalize(vectorI_J);
+
+					vec3 current_h_a = R - boid_j->getCenter();
+
 
 					h_a = h_a + current_h_a;
-
-					num_a++;
-					numNeighbours++;
-					avgVelocity += boid_j->getVelocity();
+					//totalNeighbourVelocity += vec4(boid_j->getVelocity(), 1);
+					//totalNeighbour += vec4(boid_j->getCenter(), 1);
 
 
-				}else if (distance_n < neighbourDistance && acos(arc_angle) != fieldOfView/2.0f )
+
+				}else if (distance_n < neighbourDistance && angle >  fieldOfView/2.0f )
 				{
-					avgNeighbour = avgNeighbour + boid_j->getCenter();
 
-					numNeighbours++;
-					avgVelocity += boid_j->getVelocity();
+					totalFollowing += vec4(boid_j->getHeading(), 1);
+					totalNeighbourVelocity += vec4(boid_j->getVelocity(), 1);
+					totalNeighbour += vec4(boid_j->getCenter(), 1);
 
 				}
 
@@ -115,16 +123,27 @@ void BoidScene::updateScene()
 		}
 
 
+		//printf("Total Following is %f, %f, %f, %f \n", totalFollowing.x, totalFollowing.y, totalFollowing.z, totalFollowing.w);
 		//h_a = (h_a)/((float) num_a);
 		//printf("num neighbours is %i \n", numNeighbours );
-		avgVelocity = avgVelocity/((float) numNeighbours);
-		avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
+		//avgVelocity = avgVelocity/((float) numNeighbours);
+		//avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
+		totalFollowing /= totalFollowing.w;
 
-		vec3 heading = alpha_n * normalize(avgNeighbour)
-		+ alpha_a * normalize( -1.0f * h_a) + alpha_v * normalize(boid_i->getHeading());
+		totalNeighbour /= totalNeighbour.w;
+		vec3 avgNeighbour = vec3(totalNeighbour.x,totalNeighbour.y, totalNeighbour.z );
 
- 		boid_i->setHeading(normalize(heading));
- 		boid_i->setVelocity(avgVelocity);
+ 		totalNeighbourVelocity /= totalNeighbourVelocity.w;
+ 		vec3 averageVelocity = vec3(totalNeighbourVelocity.x , totalNeighbourVelocity.y, totalNeighbourVelocity.z);
+
+ 		vec3 h_f = vec3(totalFollowing.x, totalFollowing.y, totalFollowing.z);
+		vec3 heading = alpha_n * h_f
+		+ alpha_a *  -1.0f * h_a + alpha_v * (boid_i->getVelocity() - averageVelocity);
+
+ 		boid_i->setHeading(heading);
+
+
+ 		//boid_i->setVelocity(averageVelocity);
 	}
 
 	for (auto boid:boids)
@@ -132,8 +151,9 @@ void BoidScene::updateScene()
 		vec3 center = boid->getCenter();
 
 		//boid->setCenter(center + boid->getHeading() *0.002f);
-
-		boid->setCenter(center + boid->getHeading() * boid->getVelocity());
+		float dt = 1.0/30.0f;
+		boid->setVelocity(boid->getVelocity() + boid->getHeading() * dt);
+		boid->setCenter(center + dt * boid->getVelocity());
 	}
 }
 
@@ -187,10 +207,32 @@ void BoidScene::initFromConfigFile()
 
 	avoidDistance = stof(avoidDistanceStr);
 
+
+	float max,min;
+
+	string maxSpawnDistanceStr = extractValueFromTag("maxSpawnDistance:");
+	max = stof(maxSpawnDistanceStr);
+
+	string minSpawnDistanceStr = extractValueFromTag("minSpawnDistance:");
+	min = stof(minSpawnDistanceStr);
+
 	vec3 translationVector = vec3(0, 0, 0);
 	vec3 translationVector2 = vec3(0, 1, 0);
 	for (int i = 0; i < numBoids; i++)
 	{
+
+
+
+		float x = generateRandomFloat(min, max);
+		float y = generateRandomFloat(min, max);
+		float z = generateRandomFloat(min, max);
+
+		translationVector = vec3(x, y , z);
+
+		Boid* boid = new Boid(translationVector);
+		boids.push_back(boid);
+
+		/*
 		if (i%2 == 0) {
 		Boid* boid = new Boid(translationVector);
 		translationVector.x += 1.0;
@@ -202,6 +244,7 @@ void BoidScene::initFromConfigFile()
 
 			boids.push_back(boid);
 		}
+		*/
 	}
 
 	string alpha_n_tag = "alpha_n:";
@@ -224,4 +267,43 @@ void BoidScene::initFromConfigFile()
 	string alpha_v_str = extractTagValue(query_alpha_v, alpha_v_tag);
 
 	alpha_a = stof(alpha_v_str);
+
+	string fieldOfViewMultString = extractValueFromTag("fieldOfViewMultiplier:");
+	float multiplier = stof(fieldOfViewMultString);
+
+	fieldOfView = multiplier * M_PI;
+
+
+
+
+
+}
+
+mat4 BoidScene::getModelMatrix(int i)
+{
+	vec3 velocity = boids.at(i)->getVelocity();
+	vec3 right = cross(normalize(velocity), vec3(0, 1, 0));
+	vec3 up = cross(right, velocity);
+
+	mat4 modelMatrix = mat4(vec4(normalize(velocity), 0), vec4(normalize(up), 0), vec4(normalize(right), 0),
+						vec4(boids.at(i)->getCenter(), 1));
+
+	return modelMatrix;
+
+
+}
+
+float BoidScene::generateRandomFloat(float min, float max)
+{
+	   float random = ((float) rand()) / (float) RAND_MAX;
+	   float diff = max - min;
+	   float r = random * diff;
+	   return min + r;
+}
+
+string BoidScene::extractValueFromTag(string tag)
+{
+
+	string query = paramReader->queryTag(tag);
+	return extractTagValue(query, tag);
 }
