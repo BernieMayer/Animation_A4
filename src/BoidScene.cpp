@@ -64,8 +64,9 @@ void BoidScene::updateScene()
 		Boid* boid_i = boids.at(i);
 		vec4 totalNeighbourVelocity = vec4(boid_i->getVelocity(), 1);
 		vec4 totalNeighbour = vec4(boid_i->getCenter(), 1);
+		vec4 totalAvoidance = vec4(0, 0, 0, 0);
 		vec4 totalFollowing = vec4(boid_i->getHeading(), 1);
-		vec3 h_a = vec3(0,0,0);
+		//vec3 h_a = vec3(0,0,0);
 		int num_a = 1;
 		//float avgVelocity = boid_i->getVelocity();
 		vec3 h_t;
@@ -90,7 +91,7 @@ void BoidScene::updateScene()
 				float angle = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
 				//printf("The heading is is %f , %f, %f, \n",
                 //boid_i->getHeading().x, boid_i->getHeading().y, boid_i->getHeading().z);
-				if (distance_n < avoidDistance && angle !=  fieldOfView/2.0f)
+				if (distance_n < avoidDistance && angle >  fieldOfView/2.0f)
 				{
 
 
@@ -100,10 +101,15 @@ void BoidScene::updateScene()
 					//This is a vector circle that defines the radius of avoidance
 					vec3 R = boid_i->getCenter() + avoidDistance * normalize(vectorI_J);
 
-					vec3 current_h_a = R - boid_j->getCenter();
+
+					float x = calculateX(length(i_to_j));
 
 
-					h_a = h_a + current_h_a;
+					vec4 current_h_a =  vec4(R - vectorI_J, linearWeighting(x));
+
+					totalAvoidance += current_h_a;
+
+					//h_a = h_a + current_h_a;
 					//totalNeighbourVelocity += vec4(boid_j->getVelocity(), 1);
 					//totalNeighbour += vec4(boid_j->getCenter(), 1);
 
@@ -112,9 +118,17 @@ void BoidScene::updateScene()
 				}else if (distance_n < neighbourDistance && angle >  fieldOfView/2.0f )
 				{
 
-					totalFollowing += vec4(boid_j->getHeading(), 1);
-					totalNeighbourVelocity += vec4(boid_j->getVelocity(), 1);
+					float x =  calculateX(length(vectorI_J));
+
+					//totalFollowing += vec4(boid_j->getHeading(), 1);
+					//totalFollowing += vec4(boid_j->getHeading(), linearWeighting(x));
+					totalNeighbourVelocity += vec4(boid_j->getVelocity(), linearWeighting(x));
 					totalNeighbour += vec4(boid_j->getCenter(), 1);
+
+				} else if (distance_n < neighbourDistance)
+				{
+					float x =  calculateX(length(vectorI_J));
+					totalNeighbourVelocity += vec4(boid_j->getVelocity(),linearWeighting(x));
 
 				}
 
@@ -136,9 +150,21 @@ void BoidScene::updateScene()
  		totalNeighbourVelocity /= totalNeighbourVelocity.w;
  		vec3 averageVelocity = vec3(totalNeighbourVelocity.x , totalNeighbourVelocity.y, totalNeighbourVelocity.z);
 
+ 		vec3 h_a;
+ 		if (totalAvoidance.w < 0.000001 && totalAvoidance.w > -0.000001)
+ 		{
+ 			h_a = vec3(0, 0, 0);
+ 		} else {
+ 			totalAvoidance /= totalAvoidance.w;
+ 			h_a = vec3(totalAvoidance.x , totalAvoidance.y, totalAvoidance.z);
+ 		}
+
+
  		vec3 h_f = vec3(totalFollowing.x, totalFollowing.y, totalFollowing.z);
 		vec3 heading = alpha_n * h_f
 		+ alpha_a *  -1.0f * h_a + alpha_v * (boid_i->getVelocity() - averageVelocity);
+
+
 
  		boid_i->setHeading(heading);
 
@@ -281,14 +307,18 @@ void BoidScene::initFromConfigFile()
 
 mat4 BoidScene::getModelMatrix(int i)
 {
-	vec3 velocity = boids.at(i)->getVelocity();
-	vec3 right = cross(normalize(velocity), vec3(0, 1, 0));
+
+	vec3 velocity =normalize( boids.at(i)->getVelocity());
+	vec3 right = cross(velocity, vec3(0, 1, 0));
 	vec3 up = cross(right, velocity);
 
-	mat4 modelMatrix = mat4(vec4(normalize(velocity), 0), vec4(normalize(up), 0), vec4(normalize(right), 0),
+	mat4 modelMatrix = mat4(vec4(velocity, 0), vec4(normalize(up), 0), vec4(normalize(right), 0),
 						vec4(boids.at(i)->getCenter(), 1));
 
 	return modelMatrix;
+
+
+
 
 
 }
@@ -299,6 +329,31 @@ float BoidScene::generateRandomFloat(float min, float max)
 	   float diff = max - min;
 	   float r = random * diff;
 	   return min + r;
+}
+
+float BoidScene::linearWeighting(float x)
+{
+	return 1.0 - x;
+}
+
+float BoidScene::quadraticWeighting(float x)
+{
+	return 1.0 - x * x;
+}
+
+float BoidScene::inverseWeighting(float x)
+{
+	if (x < 0.0000001 || x > -0.0000001)
+	{
+		return 1000.0f;
+	} else {
+		return 1.0f/x;
+	}
+}
+
+float BoidScene::calculateX(float r)
+{
+	return 1.0 - (r - avoidDistance)/(neighbourDistance + avoidDistance);
 }
 
 string BoidScene::extractValueFromTag(string tag)

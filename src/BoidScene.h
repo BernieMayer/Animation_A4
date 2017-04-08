@@ -32,6 +32,10 @@ public:
 	void refresh();
 private:
 
+	float calculateX(float r);
+	float linearWeighting(float x);
+	float quadraticWeighting(float x);
+	float inverseWeighting(float x);
 
 	float generateRandomFloat(float min, float max);
 	void initFromConfigFile();
