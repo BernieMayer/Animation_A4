@@ -100,7 +100,7 @@ void BoidScene::updateScene()
 					//This is a vector circle that defines the radius of avoidance
 					vec3 R = boid_i->getCenter() + avoidDistance * normalize(vectorI_J);
 
-					vec3 current_h_a = R - boid_j->getCenter();
+					vec3 current_h_a = R - vectorI_J;
 
 
 					h_a = h_a + current_h_a;
@@ -299,6 +299,26 @@ float BoidScene::generateRandomFloat(float min, float max)
 	   float diff = max - min;
 	   float r = random * diff;
 	   return min + r;
+}
+
+float BoidScene::linearWeighting(float x)
+{
+	return 1.0 - x;
+}
+
+float BoidScene::quadraticWeighting(float x)
+{
+	return 1.0 - x * x;
+}
+
+float BoidScene::inverseWeighting(float x)
+{
+	if (x < 0.0000001 || x > -0.0000001)
+	{
+		return 1000.0f;
+	} else {
+		return 1.0f/x;
+	}
 }
 
 string BoidScene::extractValueFromTag(string tag)
