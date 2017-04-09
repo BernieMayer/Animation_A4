@@ -15,6 +15,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+
+struct CircleObstacle
+{
+	vec3 center;
+	float radius;
+};
+
+
+
 class BoidScene {
 public:
 	BoidScene();
@@ -27,13 +36,23 @@ public:
 	mat4 getModelMatrix(int i);
 	vec3 getBoidCenter(int i);
 	vector<vec3> getBoidGeometry(int i);
+
+
+	vec3 getObstacleLocation(int i);
+	float getObstacleRadius(int i);
+
+
 	int getNumberOfBoids();
+	int getNumberOfObstacles();
 
 	void updateScene();
 	string extractTagValue(string fullTag, string tag);
 
 	void refresh();
 private:
+
+
+	float timeSinceStart;
 
 	float calculateX(float r);
 	float linearWeighting(float x);
@@ -54,6 +73,9 @@ private:
 	string parameterFileName;
 	ParamaterFileReader* paramReader;
 	vector<Boid*> boids;
+
+	vector<CircleObstacle> circleObstacles;
+
 
 	vec3 targetLocation;
 

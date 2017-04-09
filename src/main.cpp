@@ -186,7 +186,7 @@ int main( int argc, char**argv )
 
 	glfwWindowHint(GLFW_SAMPLES, 16);
 
-	window = glfwCreateWindow(width, height, "OpenGL Window", NULL, NULL);
+	window = glfwCreateWindow(width, height, "Boid animation", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
 

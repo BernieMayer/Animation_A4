@@ -25,6 +25,8 @@ SceneShader::SceneShader(): Shader()
 
 	boidScene = new BoidScene("file.txt");
 
+	boidScene->setTargetLocation(lightPosition);
+
 
 }
 
@@ -146,11 +148,27 @@ void SceneShader::renderBoids()
 	boidScene->updateScene();
 	int numBoids = boidScene->getNumberOfBoids();
 	vector<vec3> geometry = boidScene->getBoidGeometry(0);
+
+	glBindVertexArray(_boidVertexArray);
+	glUseProgram(_programBoids);
+
+
+	vector<vec3> colors;
+
+		for (auto i :geometry)
+		{
+
+			colors.push_back(vec3(1.0, 0.0, 0.0));
+
+		}
+
+
+
+
 	for (int i  = 0; i < numBoids; i++)
 	{
 
-		glBindVertexArray(_boidVertexArray);
-		glUseProgram(_programBoids);
+
 
 
 		//scene matrices and camera setup
@@ -180,30 +198,19 @@ void SceneShader::renderBoids()
 		glUniformMatrix4fv(glGetUniformLocation(_programBoids, "perspectiveMatrix"), 1, GL_FALSE, glm::value_ptr(_projection));
 
 
-
-
-		vector<vec3> colors;
-
-		for (auto i :geometry)
-		{
-
-			colors.push_back(vec3(1.0, 0.0, 0.0));
-
-		}
-
-
 		glBindBuffer(GL_ARRAY_BUFFER, _boidsVertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER,  geometry.size() * sizeof (glm::vec3), geometry.data(), GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, _boidColorBuffer);
 		glBufferData(GL_ARRAY_BUFFER,  colors.size() * sizeof (glm::vec3), colors.data(), GL_STATIC_DRAW);
 
-
-
 		glDrawArrays(GL_TRIANGLES, 0, geometry.size());
 
-		glBindVertexArray(0);
 	}
+
+	//glDrawArraysInstanced(GL_TRIANGLES, 0, geometry.size(), boidScene->getNumberOfBoids());
+	//glDrawArraysInstanced(GL_TRIANGLES, 0, geometry.size(), boidScene->getNumberOfBoids());
+	//glBindVertexArray(0);
 
 }
 
@@ -294,17 +301,60 @@ void SceneShader::renderLight()
 	glUniformMatrix4fv(glGetUniformLocation(_programLight, "modelview"), 1, GL_FALSE, glm::value_ptr(_modelview));
 	glUniformMatrix4fv(glGetUniformLocation(_programLight, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
 
+
 	glUniform3fv(glGetUniformLocation(_programLight, "lightPosition"), 1, glm::value_ptr(lightPosition) );
+	glUniform3fv(glGetUniformLocation(_programLight, "lightColor"), 1, glm::value_ptr(vec3(1, 1, 1)));
 
 	glPointSize(30.0f);
 	glDrawArrays( GL_POINTS, 0, 1);
 
 }
 
+void SceneShader::renderObstacles()
+{
+	glUseProgram(_programLight);
+
+	for (int i = 0; i < boidScene->getNumberOfObstacles(); i++)
+	{
+
+	//scene matrices and camera setup
+	glm::vec3 eye(0.0f, 0.3f, 2.0f);
+	glm::vec3 up(0.0f, 1.0f, 0.0f);
+	glm::vec3 center(0.0f, 0.0f, 0.0f);
+
+	_modelview = glm::lookAt( eye, center, up);
+
+	_projection = glm::perspective( 45.0f, _aspectRatio, 0.01f, 100.0f);
+
+	glm::mat4 identity(1.0f);
+
+	glm::mat4 rotationX = glm::rotate(identity, _yRot  * PI/180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+   _modelview *=  rotationX;
+
+	//uniform variables
+	glUniformMatrix4fv(glGetUniformLocation(_programLight, "modelview"), 1, GL_FALSE, glm::value_ptr(_modelview));
+	glUniformMatrix4fv(glGetUniformLocation(_programLight, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
+
+
+	glm::vec3 obstacleLocation = boidScene->getObstacleLocation(i);
+	glUniform3fv(glGetUniformLocation(_programLight, "lightPosition"), 1, glm::value_ptr(obstacleLocation) );
+	glUniform3fv(glGetUniformLocation(_programLight, "lightColor"), 1, glm::value_ptr(vec3(0, 1, 0)));
+
+	float scaleFactor = 10.0;
+	glPointSize(scaleFactor * boidScene->getObstacleRadius(i));
+	glDrawArrays( GL_POINTS, 0, 1);
+	glBindVertexArray(0);
+	}
+
+}
+
+
 void SceneShader::render()
 {
 	renderPlane();
 	renderBoids();
+	renderObstacles();
 	//renderMesh(); //this can be commented back on to show the bunny rendering
 	renderLight();
 }
@@ -341,16 +391,19 @@ void SceneShader::shutdown()
 void SceneShader::updateLightPositionX(float x)
 {
 	lightPosition.x += x;
+	boidScene->setTargetLocation(lightPosition);
 }
 
 void SceneShader::updateLightPositionY(float y)
 {
 	lightPosition.y += y;
+	boidScene->setTargetLocation(lightPosition);
 }
 
 void SceneShader::updateLightPositionZ(float z)
 {
 	lightPosition.z += z;
+	boidScene->setTargetLocation(lightPosition);
 }
 
 SceneShader::~SceneShader()

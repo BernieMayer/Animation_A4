@@ -37,6 +37,7 @@ public:
 	void renderMesh();
 	void renderLight();
 	void renderBoids();
+	void renderObstacles();
 
 	void setAspectRatio( float ratio );
 	void setZTranslation(float z);

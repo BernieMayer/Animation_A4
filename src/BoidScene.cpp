@@ -16,6 +16,7 @@ BoidScene::BoidScene() {
 
 BoidScene::BoidScene(string filename)
 {
+	srand( time( NULL ) );
 
 	parameterFileName = filename;
 	paramReader = new ParamaterFileReader(filename);
@@ -56,6 +57,15 @@ void BoidScene::updateScene()
 	//Then match location of its neighbours
 	//Match velocity
 
+	/*
+	Boid* keyBoid = boids.at(0);
+
+	vec3 velocity = keyBoid->getVelocity();
+
+	keyBoid->setVelocity(vec3(0, 0, 0));
+	keyBoid->setCenter(keyBoid->getCenter() + vec3( neighbourDistance * cos(timeSinceStart), 0, 0 ));
+	timeSinceStart += 1/30.0f;
+	*/
 
 	for (int i = 0; i < boids.size(); i++)
 	{
@@ -74,9 +84,31 @@ void BoidScene::updateScene()
 
 		float distance_n  = length(boid_i->getCenter() - targetLocation);
 
-		if (distance_n < targetDistance)
+		if (distance_n < neighbourDistance)
 		{
-			h_t = targetLocation - boid_i->getCenter();
+			float x =  calculateX(length(targetLocation - boid_i->getCenter()));
+			totalFollowing +=  linearWeighting(x) * vec4(targetLocation - boid_i->getCenter(), 1);
+			//h_t = targetLocation - boid_i->getCenter();
+		}
+
+		for (int o = 0; o < circleObstacles.size(); o++)
+		{
+			CircleObstacle circle = circleObstacles.at(o);
+
+
+			vec3 circleToBoid = boid_i->getCenter() - circle.center;
+
+			vec3 closestPoint = circle.center + normalize(circleToBoid) * circle.radius;
+
+			float distanceToCircle = length(boid_i->getCenter() - closestPoint);
+
+			if (distanceToCircle < avoidDistance)
+			{
+				float x = calculateX(distanceToCircle);
+
+				totalAvoidance += linearWeighting(x) * vec4(closestPoint - boid_i->getCenter(), 1);
+			}
+
 		}
 
 		for (int j = 0; j < boids.size() ; j++)
@@ -105,9 +137,11 @@ void BoidScene::updateScene()
 					float x = calculateX(length(i_to_j));
 
 
-					vec4 current_h_a = inverseWeighting(x) * vec4(R - vectorI_J, 1);
+					vec4 current_h_a = linearWeighting(x) * vec4(R - vectorI_J, 1);
 
 					totalAvoidance += current_h_a;
+
+					//totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(), 1);
 
 					//h_a = h_a + current_h_a;
 					//totalNeighbourVelocity += vec4(boid_j->getVelocity(), 1);
@@ -121,9 +155,12 @@ void BoidScene::updateScene()
 					float x =  calculateX(length(vectorI_J));
 
 					//totalFollowing += vec4(boid_j->getHeading(), 1);
-					totalFollowing += linearWeighting(x) * vec4(boid_j->getHeading(), 1);
+					totalFollowing += quadraticWeighting(x) * vec4(boid_j->getHeading(), 1);
 					totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(), 1);
-					totalNeighbour += linearWeighting(x) * vec4(boid_j->getCenter(), 1);
+
+
+					//Old way of doing neighbours
+					//totalNeighbour += linearWeighting(x) * vec4(boid_j->getCenter(), 1);
 
 				} else if (distance_n < neighbourDistance)
 				{
@@ -201,6 +238,7 @@ void BoidScene::refresh()
 {
 	delete paramReader;
 	boids.clear();
+	circleObstacles.clear();
 
 	initFromConfigFile();
 }
@@ -257,6 +295,15 @@ void BoidScene::initFromConfigFile()
 
 
 		Boid* boid = new Boid(translationVector);
+
+
+		float h_x = generateRandomFloat(-1.0, 1.0);
+		float h_y = generateRandomFloat(-1.0, 1.0);
+		float h_z = generateRandomFloat(-1.0, 1.0);
+
+		boid->setHeading(vec3(h_x, h_y, h_z));
+
+		boid->setVelocity(vec3(h_x, h_y, h_z));
 		//boid->setVelocity(0.1f * translationVector);
 		boids.push_back(boid);
 
@@ -274,6 +321,25 @@ void BoidScene::initFromConfigFile()
 		}
 		*/
 	}
+
+	CircleObstacle obstacle1 = CircleObstacle();
+	obstacle1.center = vec3(0, 0, 0);
+	obstacle1.radius = 1.0f;
+
+	circleObstacles.push_back(obstacle1);
+
+	CircleObstacle obstacle2 = CircleObstacle();
+	obstacle2.center = vec3(0, 0.5, 0);
+	obstacle2.radius = 8.0f;
+
+	//circleObstacles.push_back(obstacle2);
+
+
+	CircleObstacle obstacle3 = CircleObstacle();
+	obstacle3.center = vec3(1, 0.5, 0);
+	obstacle3.radius = 4.0f;
+
+	//circleObstacles.push_back(obstacle3);
 
 	string alpha_n_tag = "alpha_n:";
 	string query_alpha_n = paramReader->queryTag(alpha_n_tag);
@@ -347,7 +413,7 @@ float BoidScene::inverseWeighting(float x)
 {
 	if (x < 0.0000001 || x > -0.0000001)
 	{
-		return 1000.0f;
+		return 100000.0f;
 	} else {
 		return 1.0f/x;
 	}
@@ -365,6 +431,21 @@ void BoidScene::setTargetLocation(vec3 aLocation)
 
 vec3 BoidScene::getTargetLocation() {
 	return targetLocation;
+}
+
+vec3 BoidScene::getObstacleLocation(int i)
+{
+	return circleObstacles.at(i).center;
+}
+
+float BoidScene::getObstacleRadius(int i)
+{
+	return circleObstacles.at(i).radius;
+}
+
+int BoidScene::getNumberOfObstacles()
+{
+	return circleObstacles.size();
 }
 
 string BoidScene::extractValueFromTag(string tag)
