@@ -10,9 +10,9 @@
 Boid::Boid() {
 
 
-	vec3 p0 = vec3(0,0,0);
+	vec3 p0 = vec3(0.25f,0,0);
 	vec3 p1	= vec3(0.5f, 0.5f, 0);
-	vec3 p2 = vec3(1,0,0);
+	vec3 p2 = vec3(0.75f,0,0);
 
 	geometry.push_back(p0);
 	geometry.push_back(p1);
@@ -22,12 +22,12 @@ Boid::Boid() {
 Boid::Boid(vec3 translation)
 {
 	float scaleFactor = 0.2f;
-	vec3 p0 = scaleFactor * (vec3(0,0,0) + translation);
+	vec3 p0 = scaleFactor * (vec3(0.25f,0,0) + translation);
 	vec3 p1	= scaleFactor * (vec3(0.5f, 0.5f, 0) + translation);
-	vec3 p2 = scaleFactor * (vec3(1,0,0) + translation);
+	vec3 p2 = scaleFactor * (vec3(0.75f,0,0) + translation);
 
-	velocity = vec3(0.1, 0.0, 0.0);
-	heading = vec3(1, 0,0.0);
+	velocity = vec3(0.5, 0.0, 0.0);
+	heading = vec3(0, 1,0.0);
 
 
 	center = (p0 + p1 + p2)/(3.0f);

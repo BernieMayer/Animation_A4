@@ -21,6 +21,9 @@ public:
 	BoidScene(string filename);
 	virtual ~BoidScene();
 
+	void setTargetLocation(vec3 aLocation);
+	vec3 getTargetLocation();
+
 	mat4 getModelMatrix(int i);
 	vec3 getBoidCenter(int i);
 	vector<vec3> getBoidGeometry(int i);

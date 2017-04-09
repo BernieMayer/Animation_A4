@@ -88,10 +88,10 @@ void BoidScene::updateScene()
 				//check boid_i with boid_j and see if they are close etc
 				float distance_n = length(boid_j->getCenter() - boid_i->getCenter());
 
-				float angle = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
+				float cos_theta = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
 				//printf("The heading is is %f , %f, %f, \n",
                 //boid_i->getHeading().x, boid_i->getHeading().y, boid_i->getHeading().z);
-				if (distance_n < avoidDistance && angle >  fieldOfView/2.0f)
+				if (distance_n < avoidDistance && acos(cos_theta) >  fieldOfView/2.0f)
 				{
 
 
@@ -105,7 +105,7 @@ void BoidScene::updateScene()
 					float x = calculateX(length(i_to_j));
 
 
-					vec4 current_h_a =  vec4(R - vectorI_J, linearWeighting(x));
+					vec4 current_h_a = inverseWeighting(x) * vec4(R - vectorI_J, 1);
 
 					totalAvoidance += current_h_a;
 
@@ -115,20 +115,20 @@ void BoidScene::updateScene()
 
 
 
-				}else if (distance_n < neighbourDistance && angle >  fieldOfView/2.0f )
+				}else if (distance_n < neighbourDistance && acos(cos_theta) >  fieldOfView/2.0f )
 				{
 
 					float x =  calculateX(length(vectorI_J));
 
 					//totalFollowing += vec4(boid_j->getHeading(), 1);
-					//totalFollowing += vec4(boid_j->getHeading(), linearWeighting(x));
-					totalNeighbourVelocity += vec4(boid_j->getVelocity(), linearWeighting(x));
-					totalNeighbour += vec4(boid_j->getCenter(), 1);
+					totalFollowing += linearWeighting(x) * vec4(boid_j->getHeading(), 1);
+					totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(), 1);
+					totalNeighbour += linearWeighting(x) * vec4(boid_j->getCenter(), 1);
 
 				} else if (distance_n < neighbourDistance)
 				{
 					float x =  calculateX(length(vectorI_J));
-					totalNeighbourVelocity += vec4(boid_j->getVelocity(),linearWeighting(x));
+					totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(),1);
 
 				}
 
@@ -255,7 +255,9 @@ void BoidScene::initFromConfigFile()
 
 		translationVector = vec3(x, y , z);
 
+
 		Boid* boid = new Boid(translationVector);
+		//boid->setVelocity(0.1f * translationVector);
 		boids.push_back(boid);
 
 		/*
@@ -354,6 +356,15 @@ float BoidScene::inverseWeighting(float x)
 float BoidScene::calculateX(float r)
 {
 	return 1.0 - (r - avoidDistance)/(neighbourDistance + avoidDistance);
+}
+
+void BoidScene::setTargetLocation(vec3 aLocation)
+{
+	targetLocation = aLocation;
+}
+
+vec3 BoidScene::getTargetLocation() {
+	return targetLocation;
 }
 
 string BoidScene::extractValueFromTag(string tag)
