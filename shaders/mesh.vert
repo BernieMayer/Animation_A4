@@ -23,8 +23,8 @@ void main(void)
 
 
     N = normalize(normalMatrix * normal);
-    float scale = 4.0;
-    vec3 positionModelSpace = vertex*scale + vec3(0.0, -0.42, 0.0);
+    float scale = 0.25;
+    vec3 positionModelSpace = vertex*scale + vec3(0.0, 0.0, 0.0);
     vec4 positionCameraSpace = modelview * vec4(positionModelSpace, 1.0);
 
     positionCameraSpace.xyz /= positionCameraSpace.w;

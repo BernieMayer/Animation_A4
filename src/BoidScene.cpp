@@ -72,10 +72,10 @@ void BoidScene::updateScene()
 
 
 		Boid* boid_i = boids.at(i);
-		vec4 totalNeighbourVelocity = vec4(boid_i->getVelocity(), 1);
+		vec4 totalNeighbourVelocity = vec4(vec3(0, 0, 0), 0);
 		vec4 totalNeighbour = vec4(boid_i->getCenter(), 1);
 		vec4 totalAvoidance = vec4(0, 0, 0, 0);
-		vec4 totalFollowing = vec4(boid_i->getHeading(), 1);
+		vec4 totalFollowing = vec4(vec3(0, 0, 0), 0);
 		//vec3 h_a = vec3(0,0,0);
 		int num_a = 1;
 		//float avgVelocity = boid_i->getVelocity();
@@ -97,25 +97,6 @@ void BoidScene::updateScene()
 			//h_t = targetLocation - boid_i->getCenter();
 		}
 
-		for (int o = 0; o < circleObstacles.size(); o++)
-		{
-			CircleObstacle circle = circleObstacles.at(o);
-
-
-			vec3 circleToBoid = boid_i->getCenter() - circle.center;
-
-			vec3 closestPoint = circle.center + normalize(circleToBoid) * circle.radius;
-
-			float distanceToCircle = length(boid_i->getCenter() - closestPoint);
-
-			if (distanceToCircle < avoidDistance)
-			{
-				float x = calculateX(distanceToCircle);
-
-				//totalAvoidance += linearWeighting(x) * vec4(closestPoint - boid_i->getCenter(), 1);
-			}
-
-		}
 
 		for (int j = 0; j < boids.size() ; j++)
 		{
@@ -141,12 +122,12 @@ void BoidScene::updateScene()
 					vec3 R = boid_i->getCenter() + avoidDistance * normalize(vectorI_J);
 
 
-					float x = calculateX(length(R - vectorI_J));
+					float x = calculateX(length(i_to_j));
 
 
-					vec4 current_h_a =   vec4(R - vectorI_J, 1);
+					vec4 current_h_a =   vec4(i_to_j, 1);
 
-					totalAvoidance += current_h_a;
+					totalAvoidance += linearWeighting(x) * current_h_a;
 
 					//totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(), 1);
 
@@ -189,7 +170,25 @@ void BoidScene::updateScene()
 		//avgVelocity = avgVelocity/((float) numNeighbours);
 		//avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
 
+
+		vec3 h_f;
+		if (totalFollowing.w < 0.000001 && totalFollowing.w > -0.000001)
+		{
+			//printf("H_f is boids heading \n");
+			h_f = boid_i->getHeading();
+		} else {
+			totalFollowing -= vec4(boid_i->getCenter(), 0);
+			totalFollowing /= totalFollowing.w;
+
+			h_f = vec3(totalFollowing.x, totalFollowing.y, totalFollowing.z);
+		}
+
 		//totalFollowing -= vec4(boid_i->getCenter(), 0);
+
+
+
+
+
 		totalFollowing /= totalFollowing.w;
 
 
@@ -197,8 +196,16 @@ void BoidScene::updateScene()
 		totalNeighbour /= totalNeighbour.w;
 		vec3 avgNeighbour = vec3(totalNeighbour.x,totalNeighbour.y, totalNeighbour.z );
 
- 		totalNeighbourVelocity /= totalNeighbourVelocity.w;
- 		vec3 averageVelocity = vec3(totalNeighbourVelocity.x , totalNeighbourVelocity.y, totalNeighbourVelocity.z);
+
+ 		vec3 averageVelocity;
+
+ 		if (totalNeighbourVelocity.w < 0.000001 && totalNeighbourVelocity.w > -0.000001) {
+ 			averageVelocity = boid_i->getVelocity();
+
+ 		} else {
+ 			totalNeighbourVelocity /= totalNeighbourVelocity.w;
+ 			averageVelocity = vec3(totalNeighbourVelocity.x , totalNeighbourVelocity.y, totalNeighbourVelocity.z);
+ 		}
 
  		vec3 h_a;
  		if (totalAvoidance.w < 0.000001 && totalAvoidance.w > -0.000001)
@@ -209,12 +216,45 @@ void BoidScene::updateScene()
  			h_a = vec3(totalAvoidance.x , totalAvoidance.y, totalAvoidance.z);
  		}
 
+ 		vec4 h_obstactles;
 
- 		vec3 h_f = vec3(totalFollowing.x, totalFollowing.y, totalFollowing.z);
+ 		for (int o = 0; o < circleObstacles.size(); o++)
+ 				{
+ 					CircleObstacle circle = circleObstacles.at(o);
+
+
+ 					vec3 circleToBoid = boid_i->getCenter() - circle.center;
+
+ 					vec3 closestPoint = circle.center + normalize(circleToBoid) * circle.radius;
+
+ 					float distanceToCircle = length(boid_i->getCenter() - closestPoint);
+
+ 					if (distanceToCircle < avoidDistance)
+ 					{
+ 						float x = calculateX(distanceToCircle);
+
+ 						h_obstactles +=   linearWeighting(x) * vec4(closestPoint - boid_i->getCenter(), 1);
+ 					}
+
+ 				}
+
+
+ 		//h_obstactles /= h_obstactles.w;
+
+ 		vec3 h_ob = vec3(h_obstactles.x, h_obstactles.y, h_obstactles.z);
+
+ 		float distance_TargetLocation = length( targetLocation - boid_i->getCenter());
+ 		vec3 h_p = targetLocation - boid_i->getCenter();
+
+
 		vec3 heading = alpha_n * (h_f)
-		+ alpha_a  * -1.0f *h_a + alpha_v * (boid_i->getVelocity() - averageVelocity) + boid_i->getH_C();
+		+ alpha_a  * -1.0f *h_a + alpha_v * (averageVelocity - boid_i->getVelocity())
+	    + alpha_p * h_p + 0.1f * -1.0f * h_ob + boid_i->getH_C();
 
-
+		if (length(heading) > maxAcceleration)
+		{
+			heading = (maxAcceleration) * normalize(heading);
+		}
 
  		boid_i->setHeading(heading);
 
@@ -235,6 +275,8 @@ void BoidScene::updateScene()
 		{
 			newVelocity = (float)(maxVelocity) * normalize(newVelocity);
 		}
+
+
 
 		boid->setVelocity(newVelocity);
 		boid->setCenter(center + dt * boid->getVelocity());
@@ -402,6 +444,9 @@ void BoidScene::initFromConfigFile()
 
 	alpha_a = stof(alpha_v_str);
 
+	string alpha_pString = extractValueFromTag("alpha_p:");
+	alpha_p = stof(alpha_pString);
+
 	string fieldOfViewMultString = extractValueFromTag("fieldOfViewMultiplier:");
 	float multiplier = stof(fieldOfViewMultString);
 
@@ -413,6 +458,9 @@ void BoidScene::initFromConfigFile()
 
 	string maxVelocityString = extractValueFromTag("maxVelocity:");
 	maxVelocity = stof(maxVelocityString);
+
+	string maxAccelerationString = extractValueFromTag("maxAcceleration:");
+	maxAcceleration = stof(maxAccelerationString);
 
 
 

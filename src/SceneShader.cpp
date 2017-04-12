@@ -75,7 +75,7 @@ void SceneShader::createVertexBuffer()
 	glBindVertexArray(0);
 
 	//read and create mesh geometry
-	readMesh("./models/bunny.ply"); //normalized vertices coordinates
+	readMesh("./models/circle2.obj"); //normalized vertices coordinates
 
 	//triangle mesh
 	glGenVertexArrays(1, &_meshVertexArray);
@@ -352,10 +352,10 @@ void SceneShader::renderObstacles()
 
 void SceneShader::render()
 {
-	renderPlane();
+	//renderPlane();
 	renderBoids();
 	renderObstacles();
-	//renderMesh(); //this can be commented back on to show the bunny rendering
+	renderMesh(); //this can be commented back on to show the bunny rendering
 	renderLight();
 }
 

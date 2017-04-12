@@ -69,13 +69,16 @@ private:
 	vec3 h_c = vec3(0, 0, 0);
 
 	float maxVelocity = 20.0f;
+	float maxAcceleration = 10.0f;
 	float fieldOfView;
 	float alpha_n;
 	float alpha_a;
 	float alpha_v;
+	float alpha_p = 0.5;
 	float targetDistance = 10.0f;
 	float neighbourDistance;
 	float boundRadius;
+
 
 	float avoidDistance;
 	string parameterFileName;
