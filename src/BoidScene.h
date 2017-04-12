@@ -63,12 +63,20 @@ private:
 	void initFromConfigFile();
 	string extractValueFromTag(string tag);
 
+
+
+
+	vec3 h_c = vec3(0, 0, 0);
+
+	float maxVelocity = 20.0f;
 	float fieldOfView;
 	float alpha_n;
 	float alpha_a;
 	float alpha_v;
-	float targetDistance;
+	float targetDistance = 10.0f;
 	float neighbourDistance;
+	float boundRadius;
+
 	float avoidDistance;
 	string parameterFileName;
 	ParamaterFileReader* paramReader;

@@ -34,8 +34,18 @@ public:
 		this->center = center;
 	}
 
+	const vec3& getH_C() const {
+		return h_c;
+	}
+
+	void setH_C(const vec3& c) {
+		h_c = c;
+	}
+
 private:
 	vec3 heading;	//direction the boid is heading
+	vec3 h_c;
+
 
 	vec3 velocity;
 	vec3 center;

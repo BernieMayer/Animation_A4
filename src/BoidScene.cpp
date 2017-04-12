@@ -16,7 +16,7 @@ BoidScene::BoidScene() {
 
 BoidScene::BoidScene(string filename)
 {
-	srand( time( NULL ) );
+
 
 	parameterFileName = filename;
 	paramReader = new ParamaterFileReader(filename);
@@ -84,10 +84,16 @@ void BoidScene::updateScene()
 
 		float distance_n  = length(boid_i->getCenter() - targetLocation);
 
-		if (distance_n < neighbourDistance)
+
+
+
+
+		if (distance_n < targetDistance)
 		{
 			float x =  calculateX(length(targetLocation - boid_i->getCenter()));
-			totalFollowing +=  linearWeighting(x) * vec4(targetLocation - boid_i->getCenter(), 1);
+			//totalFollowing += vec4(targetLocation - boid_i->getCenter(), 1);
+
+
 			//h_t = targetLocation - boid_i->getCenter();
 		}
 
@@ -106,7 +112,7 @@ void BoidScene::updateScene()
 			{
 				float x = calculateX(distanceToCircle);
 
-				totalAvoidance += linearWeighting(x) * vec4(closestPoint - boid_i->getCenter(), 1);
+				//totalAvoidance += linearWeighting(x) * vec4(closestPoint - boid_i->getCenter(), 1);
 			}
 
 		}
@@ -123,6 +129,7 @@ void BoidScene::updateScene()
 				float cos_theta = dot(normalize(vectorI_J), normalize(boid_i->getHeading()));
 				//printf("The heading is is %f , %f, %f, \n",
                 //boid_i->getHeading().x, boid_i->getHeading().y, boid_i->getHeading().z);
+
 				if (distance_n < avoidDistance && acos(cos_theta) >  fieldOfView/2.0f)
 				{
 
@@ -134,10 +141,10 @@ void BoidScene::updateScene()
 					vec3 R = boid_i->getCenter() + avoidDistance * normalize(vectorI_J);
 
 
-					float x = calculateX(length(i_to_j));
+					float x = calculateX(length(R - vectorI_J));
 
 
-					vec4 current_h_a = linearWeighting(x) * vec4(R - vectorI_J, 1);
+					vec4 current_h_a =   vec4(R - vectorI_J, 1);
 
 					totalAvoidance += current_h_a;
 
@@ -155,8 +162,8 @@ void BoidScene::updateScene()
 					float x =  calculateX(length(vectorI_J));
 
 					//totalFollowing += vec4(boid_j->getHeading(), 1);
-					totalFollowing += quadraticWeighting(x) * vec4(boid_j->getHeading(), 1);
-					totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(), 1);
+					totalFollowing +=  vec4(boid_j->getHeading(), 1);
+					totalNeighbourVelocity +=  vec4(boid_j->getVelocity(), 1);
 
 
 					//Old way of doing neighbours
@@ -165,7 +172,9 @@ void BoidScene::updateScene()
 				} else if (distance_n < neighbourDistance)
 				{
 					float x =  calculateX(length(vectorI_J));
-					totalNeighbourVelocity += linearWeighting(x) * vec4(boid_j->getVelocity(),1);
+					totalNeighbourVelocity +=  vec4(boid_j->getVelocity(),1);
+
+
 
 				}
 
@@ -179,7 +188,11 @@ void BoidScene::updateScene()
 		//printf("num neighbours is %i \n", numNeighbours );
 		//avgVelocity = avgVelocity/((float) numNeighbours);
 		//avgNeighbour = avgNeighbour * (1.0f/(float) numNeighbours);
+
+		//totalFollowing -= vec4(boid_i->getCenter(), 0);
 		totalFollowing /= totalFollowing.w;
+
+
 
 		totalNeighbour /= totalNeighbour.w;
 		vec3 avgNeighbour = vec3(totalNeighbour.x,totalNeighbour.y, totalNeighbour.z );
@@ -198,8 +211,8 @@ void BoidScene::updateScene()
 
 
  		vec3 h_f = vec3(totalFollowing.x, totalFollowing.y, totalFollowing.z);
-		vec3 heading = alpha_n * h_f
-		+ alpha_a *  -1.0f * h_a + alpha_v * (boid_i->getVelocity() - averageVelocity);
+		vec3 heading = alpha_n * (h_f)
+		+ alpha_a  * -1.0f *h_a + alpha_v * (boid_i->getVelocity() - averageVelocity) + boid_i->getH_C();
 
 
 
@@ -215,8 +228,33 @@ void BoidScene::updateScene()
 
 		//boid->setCenter(center + boid->getHeading() *0.002f);
 		float dt = 1.0/30.0f;
-		boid->setVelocity(boid->getVelocity() + boid->getHeading() * dt);
+		vec3 newVelocity = boid->getVelocity() + boid->getHeading() * dt;
+
+
+		if (length(newVelocity) > maxVelocity)
+		{
+			newVelocity = (float)(maxVelocity) * normalize(newVelocity);
+		}
+
+		boid->setVelocity(newVelocity);
 		boid->setCenter(center + dt * boid->getVelocity());
+
+		if (length(boid->getCenter()) > boundRadius)
+		{
+			vec3 h_c = normalize(- boid->getCenter()) * (length(boid->getCenter() - boundRadius));
+			boid->setH_C(h_c);
+		} else
+		{
+			vec3 h_c = vec3(0, 0, 0);
+			boid->setH_C(h_c);
+		}
+			//boid->setCenter(boundRadius * normalize(boid->getCenter()) );
+			//boid->setVelocity(-1.0f * boid->getVelocity());
+			//boid->setPosition(vec3(0,0,0));
+			//boid->setVelocity(-1.0f * boid->getVelocity());
+
+
+
 	}
 }
 
@@ -236,6 +274,8 @@ vec3 BoidScene::getBoidCenter(int i)
 //Custom code used to refresh the boid scene
 void BoidScene::refresh()
 {
+
+	srand( time( NULL ) );
 	delete paramReader;
 	boids.clear();
 	circleObstacles.clear();
@@ -301,9 +341,9 @@ void BoidScene::initFromConfigFile()
 		float h_y = generateRandomFloat(-1.0, 1.0);
 		float h_z = generateRandomFloat(-1.0, 1.0);
 
-		boid->setHeading(vec3(h_x, h_y, h_z));
+		//boid->setHeading(vec3(h_x, h_y, h_z));
 
-		boid->setVelocity(vec3(h_x, h_y, h_z));
+		//boid->setVelocity(vec3(h_x, h_y, h_z));
 		//boid->setVelocity(0.1f * translationVector);
 		boids.push_back(boid);
 
@@ -367,6 +407,12 @@ void BoidScene::initFromConfigFile()
 
 	fieldOfView = multiplier * M_PI;
 
+
+	string boundRadiusString = extractValueFromTag("boundRadius:");
+	boundRadius = stof(boundRadiusString);
+
+	string maxVelocityString = extractValueFromTag("maxVelocity:");
+	maxVelocity = stof(maxVelocityString);
 
 
 
