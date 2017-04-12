@@ -78,9 +78,9 @@ private:
 	float targetDistance = 10.0f;
 	float neighbourDistance;
 	float boundRadius;
-
-
 	float avoidDistance;
+
+
 	string parameterFileName;
 	ParamaterFileReader* paramReader;
 	vector<Boid*> boids;

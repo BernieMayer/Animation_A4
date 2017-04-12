@@ -247,6 +247,8 @@ void BoidScene::updateScene()
  		vec3 h_p = targetLocation - boid_i->getCenter();
 
 
+
+
 		vec3 heading = alpha_n * (h_f)
 		+ alpha_a  * -1.0f *h_a + alpha_v * (averageVelocity - boid_i->getVelocity())
 	    + alpha_p * h_p + 0.1f * -1.0f * h_ob + boid_i->getH_C();

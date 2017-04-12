@@ -37,7 +37,16 @@ My program also allows the scene to be refreshed by pressing the R
 button
 
 My program also allows the user to move the point of interest by using the
-standard control scheme of W, A, S, D
+standard control scheme
+
+factor in this context is the movement factor for the scene
+
+A- moves the point of interest in the x direction by -factor
+D- moves the point of interest in the x direction by factor
+S- moves the point of interest in the y direction by -factor
+W- moves the point of interest in the y direction by factor
+Z- moves the point of interest in the z direction by -factor
+A- moves the point of interest in the z direction by factor
 
 
 My program also allows the user to rotate around the scene by clicking
@@ -56,3 +65,11 @@ volume is overall helpful however
 Difficulties with controlling boid behavoir. This problem has slightly been
 addressed by adding the convergence/point of interest. However by adding that
 point I have also sometimes increased the problem of the boids going too fast.
+
+
+I also think some of these problems can be fixed by playing around with the
+parameter file. I made sure to make the parameter file easy to easy
+and this ease of use hase made it easier to test certain features at runtime
+
+Overall I would say my boids have done a good job of having sporadic or
+high energy behavoir.
